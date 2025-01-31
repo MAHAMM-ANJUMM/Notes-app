@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import '../viewmodel/auth_viewmodel.dart';
+import 'package:notes_app/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -11,14 +15,17 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthViewModel _authViewModel = AuthViewModel();
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(title: Text('Login'), backgroundColor: Colors.black),
+      backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
+      appBar: AppBar(
+        title: Text('Login', style: TextStyle(color: Colors.cyan)),
+        backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -28,15 +35,15 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.cyan),
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: TextStyle(color: Colors.blueGrey),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: BorderSide(color: Colors.blueGrey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+                  borderSide: BorderSide(color: Colors.cyanAccent),
                 ),
               ),
             ),
@@ -44,15 +51,15 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: _passwordController,
               obscureText: true,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.cyan),
               decoration: InputDecoration(
                 labelText: 'Password',
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: TextStyle(color: Colors.blueGrey),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: BorderSide(color: Colors.blueGrey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+                  borderSide: BorderSide(color: Colors.cyanAccent),
                 ),
               ),
             ),
@@ -62,10 +69,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 : ElevatedButton(
                     onPressed: () async {
                       setState(() => _isLoading = true);
-                      String? error = await _authViewModel.login(
+
+                      // Use AuthProvider to handle login
+                      String? error = await Provider.of<AuthProvider>(
+                        context,
+                        listen: false,
+                      ).login(
                         _emailController.text,
                         _passwordController.text,
                       );
+
                       setState(() => _isLoading = false);
 
                       if (error == null) {
@@ -77,8 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(error,
-                                style: TextStyle(color: Colors.white)),
-                            backgroundColor: Colors.red,
+                                style: TextStyle(color: Colors.cyan)),
+                            backgroundColor: themeProvider.isDarkMode
+                                ? Colors.black
+                                : Colors.white,
                           ),
                         );
                       }
@@ -93,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               },
               child: Text('Don’t have an account? Sign up',
-                  style: TextStyle(color: Colors.blue)),
+                  style: TextStyle(color: Colors.cyan)),
             ),
           ],
         ),

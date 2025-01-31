@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:notes_app/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 import '../viewmodel/note_viewmodel.dart';
 import '../model/note_model.dart';
 
 class NoteScreen extends StatefulWidget {
   final NoteModel note;
 
-  NoteScreen({required this.note});
+  const NoteScreen({super.key, required this.note});
 
   @override
   _NoteScreenState createState() => _NoteScreenState();
@@ -14,7 +16,6 @@ class NoteScreen extends StatefulWidget {
 class _NoteScreenState extends State<NoteScreen> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
-  final NoteViewModel _noteViewModel = NoteViewModel();
   bool _isLoading = false;
 
   @override
@@ -26,17 +27,29 @@ class _NoteScreenState extends State<NoteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final noteViewModel = Provider.of<NoteViewModel>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
       appBar: AppBar(
-        title: Text('Edit Note'),
-        backgroundColor: Colors.black,
+        title: Text(
+          'Edit Note',
+          style: TextStyle(color: Colors.cyan),
+        ),
+        backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
         actions: [
           IconButton(
-            icon: Icon(Icons.delete, color: Colors.red),
+            icon: Icon(Icons.delete, color: Colors.blueGrey),
             onPressed: () async {
-              await _noteViewModel.deleteNote(widget.note.noteId);
-              Navigator.pop(context);
+              setState(() => _isLoading = true);
+              try {
+                await noteViewModel.deleteNote(widget.note.noteId);
+                Navigator.pop(context);
+              } catch (e) {
+                _showErrorSnackBar(context, 'Error deleting note');
+              } finally {
+                setState(() => _isLoading = false);
+              }
             },
           ),
         ],
@@ -46,35 +59,17 @@ class _NoteScreenState extends State<NoteScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            _buildTextField(
               controller: _titleController,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Title',
-                labelStyle: TextStyle(color: Colors.grey),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-              ),
+              label: 'Title',
+              context: context,
             ),
             SizedBox(height: 12),
-            TextField(
+            _buildTextField(
               controller: _contentController,
+              label: 'Content',
+              context: context,
               maxLines: 5,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Content',
-                labelStyle: TextStyle(color: Colors.grey),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-              ),
             ),
             SizedBox(height: 20),
             _isLoading
@@ -82,18 +77,59 @@ class _NoteScreenState extends State<NoteScreen> {
                 : ElevatedButton(
                     onPressed: () async {
                       setState(() => _isLoading = true);
-                      await _noteViewModel.updateNote(
-                        widget.note.noteId,
-                        _titleController.text,
-                        _contentController.text,
-                      );
-                      setState(() => _isLoading = false);
-                      Navigator.pop(context);
+                      try {
+                        await noteViewModel.updateNote(
+                          widget.note.noteId,
+                          _titleController.text,
+                          _contentController.text,
+                        );
+                        Navigator.pop(context);
+                      } catch (e) {
+                        _showErrorSnackBar(context, 'Error saving changes');
+                      } finally {
+                        setState(() => _isLoading = false);
+                      }
                     },
-                    child: Text('Save Changes'),
+                    child: Text('Save Changes',
+                        selectionColor: themeProvider.isDarkMode
+                            ? Colors.black
+                            : Colors.white,
+                        style: TextStyle(color: Colors.cyan)),
                   ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required BuildContext context,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      style: TextStyle(color: Colors.cyan),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.blueGrey),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blueGrey),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.cyanAccent),
+        ),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.blueGrey,
       ),
     );
   }

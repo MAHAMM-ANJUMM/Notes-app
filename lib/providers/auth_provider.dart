@@ -13,6 +13,8 @@ class AuthProvider with ChangeNotifier {
   User? get user => _user;
   bool get isAuthenticated => _user != null;
 
+  get authStateChanges => null;
+
   Future<String?> signUp(String email, String password) async {
     String? error = await _authViewModel.signUp(email, password);
     if (error == null) {
@@ -29,11 +31,5 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
     return error;
-  }
-
-  Future<void> logout() async {
-    await _authViewModel.logout();
-    _user = null;
-    notifyListeners();
   }
 }

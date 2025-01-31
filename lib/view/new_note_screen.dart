@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/viewmodel/note_viewmodel.dart';
+import 'package:notes_app/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
+import '../viewmodel/note_viewmodel.dart';
 
 class NewNoteScreen extends StatefulWidget {
+  const NewNoteScreen({super.key});
+
   @override
   _NewNoteScreenState createState() => _NewNoteScreenState();
 }
@@ -9,16 +13,17 @@ class NewNoteScreen extends StatefulWidget {
 class _NewNoteScreenState extends State<NewNoteScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  final NoteViewModel _noteViewModel = NoteViewModel();
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
+    final noteViewModel = Provider.of<NoteViewModel>(context, listen: false);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
       appBar: AppBar(
-        title: Text('New Note'),
-        backgroundColor: Colors.black,
+        title: Text('New Note', style: TextStyle(color: Colors.cyan)),
+        backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -27,15 +32,15 @@ class _NewNoteScreenState extends State<NewNoteScreen> {
           children: [
             TextField(
               controller: _titleController,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.cyan),
               decoration: InputDecoration(
                 labelText: 'Title',
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: TextStyle(color: Colors.blueGrey),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: BorderSide(color: Colors.blueGrey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+                  borderSide: BorderSide(color: Colors.cyanAccent),
                 ),
               ),
             ),
@@ -43,15 +48,15 @@ class _NewNoteScreenState extends State<NewNoteScreen> {
             TextField(
               controller: _contentController,
               maxLines: 5,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.cyan),
               decoration: InputDecoration(
                 labelText: 'Content',
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: TextStyle(color: Colors.blueGrey),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+                  borderSide: BorderSide(color: Colors.blueGrey),
                 ),
               ),
             ),
@@ -60,13 +65,37 @@ class _NewNoteScreenState extends State<NewNoteScreen> {
                 ? Center(child: CircularProgressIndicator())
                 : ElevatedButton(
                     onPressed: () async {
+                      if (_titleController.text.isEmpty ||
+                          _contentController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Title and content cannot be empty"),
+                            backgroundColor: Colors.blueGrey,
+                          ),
+                        );
+                        return;
+                      }
+
                       setState(() => _isLoading = true);
-                      await _noteViewModel.addNote(
-                        _titleController.text,
-                        _contentController.text,
-                      );
-                      setState(() => _isLoading = false);
-                      Navigator.pop(context);
+
+                      try {
+                        await noteViewModel.addNote(
+                          _titleController.text,
+                          _contentController.text,
+                        );
+
+                        Navigator.pop(context); // Close screen after saving
+                      } catch (e) {
+                        print("Error saving note: $e");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Failed to save note"),
+                            backgroundColor: Colors.blueGrey,
+                          ),
+                        );
+                      } finally {
+                        setState(() => _isLoading = false);
+                      }
                     },
                     child: Text('Save Note'),
                   ),

@@ -3,6 +3,8 @@ import '../viewmodel/auth_viewmodel.dart';
 import 'home_screen.dart';
 
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
   @override
   _SignupScreenState createState() => _SignupScreenState();
 }
@@ -12,12 +14,13 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final AuthViewModel _authViewModel = AuthViewModel();
   bool _isLoading = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: Text('Sign Up'), backgroundColor: Colors.black),
+      appBar: AppBar(
+          title: Text('Sign Up', style: TextStyle(color: Colors.cyan)),
+          backgroundColor: Colors.black),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -27,15 +30,15 @@ class _SignupScreenState extends State<SignupScreen> {
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.cyan),
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: TextStyle(color: Colors.blueGrey),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: BorderSide(color: Colors.blueGrey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+                  borderSide: BorderSide(color: Colors.cyanAccent),
                 ),
               ),
             ),
@@ -43,15 +46,15 @@ class _SignupScreenState extends State<SignupScreen> {
             TextField(
               controller: _passwordController,
               obscureText: true,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.cyan),
               decoration: InputDecoration(
                 labelText: 'Password',
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: TextStyle(color: Colors.blueGrey),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: BorderSide(color: Colors.blueGrey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+                  borderSide: BorderSide(color: Colors.cyanAccent),
                 ),
               ),
             ),
@@ -74,8 +77,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content: Text(error,
-                                  style: TextStyle(color: Colors.white)),
-                              backgroundColor: Colors.red),
+                                  style: TextStyle(color: Colors.cyan)),
+                              backgroundColor: Colors.black),
                         );
                       }
                     },
@@ -86,7 +89,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 Navigator.pop(context);
               },
               child: Text('Already have an account? Login',
-                  style: TextStyle(color: Colors.blue)),
+                  style: TextStyle(color: Colors.cyanAccent)),
             ),
           ],
         ),
